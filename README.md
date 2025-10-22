@@ -43,4 +43,13 @@ docker-compose run --rm app sh -c "django-admin startproject app ."
 
 docker-compose up
 
-# create folder .github/workflows on the root project and create checks.yml
+# create folder .github/workflows on the root project and create checks.yml add :
+
+---
+
+name: Checks
+on: [push]
+jobs:
+test-lint
+name: Test and lint
+runs-on: ubuntu-20.04
