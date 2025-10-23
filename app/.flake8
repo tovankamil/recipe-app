@@ -1,5 +1,4 @@
-[flake8]
-
+[flake8]gig
 exclude = 
     migrations,
     __pycache__,
