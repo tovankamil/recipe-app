@@ -1,0 +1,12 @@
+{
+  // Ini adalah pengaturan linter yang masih berfungsi.
+  // Jika Anda ingin menggunakan Flake8, set Flake8 ke true dan Pylint ke false.
+  "python.linting.flake8Enabled": true,
+  "python.linting.pylintEnabled": false,
+
+  // (Opsional) Mengirimkan argumen untuk Flake8 (misalnya, untuk mengubah panjang baris)
+  "python.linting.flake8Args": ["--max-line-length=88", "--ignore=E203,W503"],
+
+  // Untuk memastikan VS Code menemukan linter Anda di venv (jika tidak ditemukan otomatis)
+  "python.defaultInterpreterPath": "./.venv/bin/python"
+}
