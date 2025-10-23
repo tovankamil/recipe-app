@@ -1,12 +1,65 @@
+version: "3.8"
+
 services:
+  # Layanan Database (PostgreSQL)
+  db:
+    # PERBAIKAN: Volume dihapus, kini menggunakan image versi 16 terbaru
+    image: postgres:16-alpine
+    container_name: Postgres
+    restart: always
+    environment:
+      # Variabel lingkungan database, digunakan juga oleh service 'app'
+      - POSTGRES_DB=devdb
+      - POSTGRES_USER=devuser
+      - POSTGRES_PASSWORD=devpass
+
+    # PENTING: Gunakan nama volume yang sesuai dengan definisi di bagian bawah
+    volumes:
+      - dev-db-data:/var/lib/postgresql/data
+
+    # BEST PRACTICE: Memastikan shutdown bersih (menghindari error "database system was not properly shut down")
+    stop_grace_period: 30s
+
+    # BEST PRACTICE: Mendefinisikan kapan container dianggap 'sehat' (siap menerima koneksi)
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U devuser -d devdb"] # Menggunakan user dan db yang baru
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # Layanan Aplikasi (Django)
   app:
+    # Menambahkan ARG DEV=true untuk menginstal dependencies dev jika ada
     build:
       context: .
       args:
         - DEV=true
+    container_name: Django
+    restart: always
     ports:
       - "8000:8000"
+
+    # Menggunakan environment variables yang Anda definisikan.
+    environment:
+      - DB_HOST=db
+      - DB_NAME=devdb
+      - DB_USER=devuser
+      - DB_PASS=devpass
+
+    # Menggunakan volumes untuk live-reloading code (Hanya me-mount folder 'app' saja)
     volumes:
       - ./app:/app
+
+    # BEST PRACTICE: Hanya memulai app jika DB 'sehat' (menghindari OperationalError)
+    depends_on:
+      db:
+        condition: service_healthy
+
+    # Menjalankan Django server
     command: >
-      sh -c "python manage.py runserver 0.0.0.0:8000"
+      sh -c "python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
+
+# Definisi Volume
+volumes:
+  # Menggunakan nama volume yang Anda tentukan
+  dev-db-data:

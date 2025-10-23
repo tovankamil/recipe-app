@@ -53,3 +53,11 @@ jobs:
 test-lint
 name: Test and lint
 runs-on: ubuntu-20.04
+
+# simple testcase
+
+docker-compose run --rm app sh -c "python manage.py test"
+
+# create core modules
+
+docker-compose run --rm app sh -c "python manage.py startapp core"

@@ -1,0 +1,57 @@
+FROM python:3.15.0a1-alpine3.21
+
+LABEL maintainer="tovan.kamil@gmail.com"
+
+ENV PYTHONUNBUFFERED=1
+
+# Salin requirements files
+COPY ./requirements.txt /tmp/requirements.txt
+COPY ./requirements.dev.txt /tmp/requirements.dev.txt
+ARG DEV=false
+
+# Install dependencies dalam single layer
+RUN python -m venv /py && \
+    /py/bin/pip install --upgrade pip && \
+    # Install system dependencies - TAMBAHAN UNTUK PSYCOPG2
+    apk add --update --no-cache \
+    postgresql-client \
+    postgresql-libs \
+    libpq && \
+    apk add --update --no-cache --virtual .tmp-build-deps \
+    build-base \
+    postgresql-dev \
+    musl-dev \
+    linux-headers \
+    gcc \
+    python3-dev \
+    libffi-dev && \
+    # Install Python packages
+    /py/bin/pip install -r /tmp/requirements.txt && \
+    # Install dev packages jika needed
+    if [ "$DEV" = "true" ]; then \
+    /py/bin/pip install -r /tmp/requirements.dev.txt; \
+    fi && \
+    # Cleanup
+    apk del .tmp-build-deps && \
+    rm -rf /tmp/* && \
+    rm -rf /root/.cache/pip
+
+# Create non-root user
+RUN adduser \
+    --disabled-password \
+    --no-create-home \
+    --shell /bin/bash \
+    django-user && \
+    chown -R django-user:django-user /py
+
+# Set Python path
+ENV PATH="/py/bin:$PATH"
+
+# Set working directory
+WORKDIR /app
+COPY --chown=django-user:django-user . /app
+
+# Switch to non-root user
+USER django-user
+
+EXPOSE 8000
