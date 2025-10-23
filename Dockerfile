@@ -49,7 +49,7 @@ WORKDIR /app
 
 # Copy compiled packages from the 'builder' stage
 COPY --from=builder /usr/local/lib/python3.12/site-packages /usr/local/lib/python3.12/site-packages
-
+COPY --from=builder /usr/local/bin/flake8 /usr/local/bin/
 # Copy application code (owned by django-user)
 COPY --chown=django-user:django-user . /app
 
